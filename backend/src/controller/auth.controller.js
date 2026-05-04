@@ -34,7 +34,7 @@ async function register(req, res) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
     return res
       .status(201)
@@ -63,7 +63,7 @@ async function login(req, res){
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            maxAge:  24 * 60 * 60 * 1000, // 1 day
         })
         return res.status(200).json({message: "Login successful", user: {id: user._id, name: user.name, email: user.email}, token})
     }

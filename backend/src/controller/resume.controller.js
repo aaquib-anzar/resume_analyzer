@@ -1,7 +1,7 @@
 const { PDFParse } = require("pdf-parse");
-
-//const model = require("../config/gemini");
+const resumeModel = require("../models/resume.model");
 const model = require("../config/groq");
+const safeParse = require("../utils/safeParse");
 
 async function uploadResume(req, res) {
   try {
@@ -16,13 +16,11 @@ async function uploadResume(req, res) {
         .status(400)
         .json({ message: "Unable to extract text from the resume" });
     }
-    return res
-      .status(200)
-      .json({
-        message: "Resume uploaded successfully",
-        text: extractedText,
-        pageCount: pdfData.pages?.length || 0,
-      });
+    return res.status(200).json({
+      message: "Resume uploaded successfully",
+      text: extractedText,
+      pageCount: pdfData.pages?.length || 0,
+    });
   } catch (error) {
     console.error("Error uploading resume:", error.message);
     return res.status(500).json({ message: "Error uploading resume" });
@@ -59,35 +57,25 @@ async function analyzeResume(req, res) {
       Respond ONLY with the JSON object. No extra text, no markdown backticks.
     `;
 
-    try {
-      const result = await model.generateContent(prompt);
-      const responseText = result.response.text();
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
 
-      // Parse JSON safely
-      const analysis = JSON.parse(responseText);
+    // Parse JSON safely
+    const analysis = safeParse(responseText);
+    const resume = await resumeModel.create({
+      userId: req.user.id,
+      //fileName: fileName || "resume.pdf",
+      resumeText: resumeText,
+      analysisResult: analysis,
+      matchResult: null, // Will be filled in if user later uses the match feature
+      jobDescription: null, // Will be filled in if user later uses the match feature
+    });
 
-      return res.status(200).json({
-        message: "Resume analyzed successfully",
-        analysis,
-      });
-    } catch (apiError) {
-      console.error("Gemini API Error:", apiError.message);
-      
-      // Check if it's a quota/rate limit error
-      if (apiError.message.includes("429") || apiError.message.includes("quota")) {
-        return res.status(429).json({ 
-          message: "API quota exceeded. Please try again in a few minutes." 
-        });
-      }
-      
-      if (apiError.message.includes("fetch failed")) {
-        return res.status(503).json({ 
-          message: "API service temporarily unavailable. Please try again shortly." 
-        });
-      }
-      
-      throw apiError;
-    }
+    return res.status(200).json({
+      message: "Resume analyzed successfully",
+      analysis,
+      resumeId: resume._id,
+    });
   } catch (error) {
     console.error("Error analyzing resume:", error.message);
     return res.status(500).json({ message: "Error analyzing resume" });
@@ -96,12 +84,16 @@ async function analyzeResume(req, res) {
 
 async function matchResume(req, res) {
   try {
-    const { resumeText, jobDescription } = req.body;
+    const { resumeId, jobDescription,  } = req.body;
 
-    if (!resumeText || !jobDescription) {
+    if (!resumeId || !jobDescription) {
       return res
         .status(400)
         .json({ message: "Resume text and job description are required" });
+    }
+    const resume = await resumeModel.findById({ _id: resumeId , userId: req.user.id });
+    if (!resume) {
+      return res.status(404).json({ message: "Resume not found" });
     }
 
     const prompt = `
@@ -116,7 +108,7 @@ async function matchResume(req, res) {
       }
 
       Resume:
-      ${resumeText}
+      ${resume.resumeText}
 
       Job Description:
       ${jobDescription}
@@ -124,36 +116,41 @@ async function matchResume(req, res) {
       Respond ONLY with the JSON object. No extra text, no markdown backticks.
     `;
 
-    try {
-      const result = await model.generateContent(prompt);
-      const responseText = result.response.text();
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
 
-      // Parse JSON safely
-      const analysis = JSON.parse(responseText);
+    // Parse JSON safely
+    const analysis = safeParse(responseText);
+    await resumeModel.findByIdAndUpdate(resume._id, {
+      matchResult: analysis,
+      jobDescription: jobDescription,
+    }, { new: true });
 
-      return res.status(200).json({ message: "Resume analyzed successfully", analysis });
-    } catch (apiError) {
-      console.error("Gemini API Error:", apiError.message);
-      
-      // Check if it's a quota/rate limit error
-      if (apiError.message.includes("429") || apiError.message.includes("quota")) {
-        return res.status(429).json({ 
-          message: "API quota exceeded. Please try again in a few minutes." 
-        });
-      }
-      
-      if (apiError.message.includes("fetch failed")) {
-        return res.status(503).json({ 
-          message: "API service temporarily unavailable. Please try again shortly." 
-        });
-      }
-      
-      throw apiError;
-    }
+    return res
+      .status(200)
+      .json({
+        message: "Resume matched successfully",
+        analysis,
+        resumeId: resume._id,
+      });
   } catch (error) {
     console.error("Error matching resume:", error.message);
     return res.status(500).json({ message: "Error matching resume" });
   }
 }
-
-module.exports = { uploadResume, analyzeResume, matchResume };
+async function history(req, res) {
+  try {
+    const userId = req.user.id;
+    if(!userId){
+      return res.status(400).json({message: "User ID not found in request"})
+    }
+    const history = await resumeModel.find({ userId }).sort({ createdAt: -1 });
+    return res
+      .status(200)
+      .json({ message: "History retrieved successfully", history });
+  } catch (error) {
+    console.error("Error retrieving history:", error.message);
+    return res.status(500).json({ message: "Error retrieving history" });
+  }
+}
+module.exports = { uploadResume, analyzeResume, matchResume, history };
