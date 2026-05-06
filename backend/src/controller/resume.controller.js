@@ -145,6 +145,7 @@ async function history(req, res) {
       return res.status(400).json({message: "User ID not found in request"})
     }
     const history = await resumeModel.find({ userId }).sort({ createdAt: -1 });
+    console.log(history)
     return res
       .status(200)
       .json({ message: "History retrieved successfully", history });
