@@ -17,14 +17,14 @@ const Dashboard = () => {
     const fetchHistory = async () => {
       try {
         const response = await api.get("/resume/history");
-        setHistory(response.data.history.slice(0, 3));
+        setHistory(response.data.history?.slice(0, 3) || []);
       } catch (error) {
-        console.error("Error fetching history:", error.message);
+        console.error("Error fetching history:", error);
+        setHistory([]);
       }
     };
     fetchHistory();
   }, []);
-  console.log("User history:", history);
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
@@ -38,7 +38,7 @@ const Dashboard = () => {
     formData.append("resume", file);
     setUploading(true);
     try {
-      const response = await api.post("resume/upload", formData);
+      const response = await api.post("/resume/upload", formData);
       setResumeText(response.data.text);
     } catch (error) {
       setError(error.response?.data?.message || "Error uploading resume");
@@ -114,6 +114,16 @@ const Dashboard = () => {
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
               >
                 Analyze Resume
+              </button>
+              <button
+                onClick={() =>
+                  navigate("/analyze", {
+                    state: { resumeText, showMatch: true },
+                  })
+                }
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition"
+              >
+                Match with Job
               </button>
             </div>
           )}

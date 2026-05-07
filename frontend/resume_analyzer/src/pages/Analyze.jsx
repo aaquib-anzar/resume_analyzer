@@ -7,6 +7,7 @@ const Analyze = () => {
   const location = useLocation();
   const [resumeText, setResumeText] = useState(location.state?.resumeText || "");
   const [jobDescription, setJobDescription] = useState("");
+  const [resumeID, setResumeID] = useState(null)
   const [analysis, setAnalysis] = useState(null);
   const [matchResult, setMatchResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -25,6 +26,7 @@ const Analyze = () => {
     try {
       const res = await api.post("/resume/analyze", { resumeText });
       setAnalysis(res.data.analysis);
+      setResumeID(res.data.resumeId)
     } catch (err) {
       setError(err.response?.data?.message || "Error analyzing resume");
     } finally {
@@ -40,7 +42,7 @@ const Analyze = () => {
     setError("");
     setLoading(true);
     try {
-      const res = await api.post("/resume/match", { resumeText, jobDescription });
+      const res = await api.post("/resume/match", { resumeID, jobDescription });
       setMatchResult(res.data.matchResult);
     } catch (err) {
       setError(err.response?.data?.message || "Error matching resume");

@@ -16,12 +16,14 @@ function App() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await api.get("auth/profile");
-        dispatch(setUser(response.data.user));
+        const response = await api.get("/auth/profile");
+        if (response.data.user) {
+          dispatch(setUser(response.data.user));
+        }
       } catch (err) {
-        console.log("No user logged in");
+        console.error("Error fetching user:", err.message);
         dispatch(clearUser());
-      }finally {
+      } finally {
         dispatch(setLoading(false));
       }
     };

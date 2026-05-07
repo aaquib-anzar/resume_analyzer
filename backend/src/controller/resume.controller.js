@@ -84,14 +84,13 @@ async function analyzeResume(req, res) {
 
 async function matchResume(req, res) {
   try {
-    const { resumeId, jobDescription,  } = req.body;
-
-    if (!resumeId || !jobDescription) {
+    const { resumeID, jobDescription  } = req.body;
+    if (!resumeID || !jobDescription) {
       return res
         .status(400)
         .json({ message: "Resume text and job description are required" });
     }
-    const resume = await resumeModel.findById({ _id: resumeId , userId: req.user.id });
+    const resume = await resumeModel.findById({ _id: resumeID , userId: req.user.id });
     if (!resume) {
       return res.status(404).json({ message: "Resume not found" });
     }
@@ -120,17 +119,17 @@ async function matchResume(req, res) {
     const responseText = result.response.text();
 
     // Parse JSON safely
-    const analysis = safeParse(responseText);
+    const matchResult = safeParse(responseText);
     await resumeModel.findByIdAndUpdate(resume._id, {
-      matchResult: analysis,
+      matchResult,
       jobDescription: jobDescription,
-    }, { new: true });
+    }, { returnDocument: 'after' });
 
     return res
       .status(200)
       .json({
         message: "Resume matched successfully",
-        analysis,
+        matchResult,
         resumeId: resume._id,
       });
   } catch (error) {
@@ -145,7 +144,6 @@ async function history(req, res) {
       return res.status(400).json({message: "User ID not found in request"})
     }
     const history = await resumeModel.find({ userId }).sort({ createdAt: -1 });
-    console.log(history)
     return res
       .status(200)
       .json({ message: "History retrieved successfully", history });
