@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { setUser } from "../redux/slice/authSlice.js";
+import { FaEye } from "react-icons/fa";
 import api from "../api/axios.js";
 
 const Register = () => {
@@ -12,6 +13,8 @@ const Register = () => {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -57,9 +60,7 @@ const Register = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-700">
-                Name
-              </label>
+              <label className="text-sm font-medium text-gray-700">Name</label>
               <input
                 type="text"
                 name="name"
@@ -72,9 +73,7 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700">
-                Email
-              </label>
+              <label className="text-sm font-medium text-gray-700">Email</label>
               <input
                 type="email"
                 name="email"
@@ -90,15 +89,24 @@ const Register = () => {
               <label className="text-sm font-medium text-gray-700">
                 Password
               </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                required
-                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  required
+                  className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
+                >
+                  <FaEye />
+                </button>
+              </div>
             </div>
 
             <button
@@ -113,10 +121,7 @@ const Register = () => {
           {/* Footer */}
           <p className="text-sm text-gray-500 text-center mt-6">
             Already have an account?{" "}
-            <Link
-              to="/"
-              className="text-blue-600 font-medium hover:underline"
-            >
+            <Link to="/" className="text-blue-600 font-medium hover:underline">
               Login
             </Link>
           </p>
