@@ -68,6 +68,7 @@ resume-analyzer/
 │   │   ├── redux/
 │   │   └── App.jsx
 │   └── package.json
+├── screenshots
 ├── .gitignore
 └── README.md
 ```
@@ -139,7 +140,11 @@ npm run dev
 
 ## 🖼️ Screenshots
 
-> Coming soon
+> ![Register Page](screenshots/register.png)
+> ![Analysis Page](screenshots/analyze.png)
+> ![History Page](screenshots/history.png)
+> ![Dashboard Page](screenshots/dashboard.png)
+> ![Login Page](screenshots/Login.png)
 
 ---
 
