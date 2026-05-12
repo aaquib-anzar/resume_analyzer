@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 const allowedOrigins = [
-  "http://localhost:5173","https://resume-analyzer-nine-amber.vercel.app/",
+  "http://localhost:5173","https://resume-analyzer-nine-amber.vercel.app",
 ];
 app.use(
   cors({
