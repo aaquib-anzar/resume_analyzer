@@ -3,6 +3,9 @@
 An AI-powered full stack web application that analyzes resumes, provides improvement suggestions, and matches them against job descriptions with a relevance score.
 
 ---
+**Live Demo** 
+- ProjectLink: [resume-analyzer](https://resume-analyzer-nine-amber.vercel.app/)
+
 
 ## 🚀 Features
 
@@ -173,6 +176,5 @@ You can test all endpoints using [Postman](https://www.postman.com/).
 - Portfolio: [aaquib.vercel.app](https://aaquib.vercel.app)
 - GitHub: [@aaquib-anzar](https://github.com/aaquib-anzar)
 - LinkedIn: [aaquib-anzar](https://linkedin.com/in/aaquib-anzar-519771170)
-- ProjectLink: [aaquib-anzar](https://resume-analyzer-nine-amber.vercel.app/)
 
 ---
